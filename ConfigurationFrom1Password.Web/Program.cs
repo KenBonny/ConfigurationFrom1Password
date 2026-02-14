@@ -1,8 +1,12 @@
+using ConfigurationFrom1Password;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Load configuration and replace sensitive values from 1Password.
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json");
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json")
+    .AddInMemoryCollection([ new ("SensitiveData", "op://Private/1Password Config Extension Test/password")])
+    .Replace1PasswordSecrets();
 
 // Add services to the container.
 builder.Services.AddControllers();

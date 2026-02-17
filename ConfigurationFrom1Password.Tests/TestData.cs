@@ -16,7 +16,7 @@ public class OnePasswodTestConfigurationSource(Func<string, string> getSecretsFo
 {
     /// <inheritdoc />
     public IConfigurationProvider Build(IConfigurationBuilder builder) =>
-        new OnePasswordConfigurationProvider(builder.Build(), getSecretsForTesting);
+        new OnePasswordConfigurationProvider(builder, getSecretsForTesting);
 }
 
 public static class TestData

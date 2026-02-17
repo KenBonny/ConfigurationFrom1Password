@@ -15,7 +15,7 @@ public static class OnePasswordConfigurationExtension
 public class OnePasswodConfigurationSource() : IConfigurationSource
 {
     /// <inheritdoc />
-    public IConfigurationProvider Build(IConfigurationBuilder builder) => new OnePasswordConfigurationProvider(builder.Build());
+    public IConfigurationProvider Build(IConfigurationBuilder builder) => new OnePasswordConfigurationProvider(builder);
 }
 
 public class OnePasswordConfigurationProvider : ConfigurationProvider
@@ -23,7 +23,7 @@ public class OnePasswordConfigurationProvider : ConfigurationProvider
     private readonly IConfigurationRoot _configurationRoot;
     private readonly Func<string, string> _getSecret;
 
-    public OnePasswordConfigurationProvider(IConfigurationRoot configurationRoot) : this(configurationRoot, ReadSecretFrom1Password) { }
+    public OnePasswordConfigurationProvider(IConfigurationBuilder configurationRoot) : this(configurationRoot, ReadSecretFrom1Password) { }
 
     /// <summary>
     /// Use this constructor if you want to mock the secret retrieval.
@@ -33,10 +33,10 @@ public class OnePasswordConfigurationProvider : ConfigurationProvider
     /// </summary>
     /// <param name="configurationRoot"></param>
     /// <param name="getSecret"></param>
-    public OnePasswordConfigurationProvider(IConfigurationRoot configurationRoot, Func<string, string> getSecret)
+    public OnePasswordConfigurationProvider(IConfigurationBuilder configurationRoot, Func<string, string> getSecret)
     {
         _getSecret = getSecret;
-        _configurationRoot = configurationRoot;
+        _configurationRoot = configurationRoot.Build();
     }
 
     /// <inheritdoc />

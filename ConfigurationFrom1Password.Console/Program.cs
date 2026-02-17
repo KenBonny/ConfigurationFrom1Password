@@ -9,7 +9,15 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Replace1PasswordSecrets();
 
-Console.WriteLine(builder.Configuration["InMemorySensitiveData"]);
-Console.WriteLine(builder.Configuration["SensitiveData"]);
-Console.WriteLine(builder.Configuration["ExternalService"]);
-Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+var complexObject = builder.Configuration.GetSection("ComplexObject").Get<ComplexObject>();
+Console.WriteLine("InMemory Sensitive Data: " + builder.Configuration["InMemorySensitiveData"]);
+Console.WriteLine("Sensitive Data: " + builder.Configuration["SensitiveData"]);
+Console.WriteLine("External Service: " + builder.Configuration["ExternalService"]);
+Console.WriteLine("Connection String: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+Console.WriteLine("Non-sensitive Data: " + builder.Configuration["NonSensitiveData"]);
+Console.WriteLine("Complex Object Name: " + complexObject.Name);
+Console.WriteLine("Complex Object Value: " + complexObject.Value);
+Console.WriteLine("Complex Object URL: " + complexObject.Url);
+Console.WriteLine("Complex Object Tags: " + string.Join("", complexObject.Tags.Select(tag => $"{Environment.NewLine} - {tag}")));
+
+record ComplexObject(string Name, int Value, Uri Url, List<string> Tags);

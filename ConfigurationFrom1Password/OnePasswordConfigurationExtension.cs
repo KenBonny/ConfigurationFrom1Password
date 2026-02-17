@@ -15,16 +15,28 @@ public static class OnePasswordConfigurationExtension
 public class OnePasswodConfigurationSource() : IConfigurationSource
 {
     /// <inheritdoc />
-    public IConfigurationProvider Build(IConfigurationBuilder builder) => new OnePasswordConfigurationProvider(builder);
+    public IConfigurationProvider Build(IConfigurationBuilder builder) => new OnePasswordConfigurationProvider(builder.Build());
 }
 
 public class OnePasswordConfigurationProvider : ConfigurationProvider
 {
     private readonly IConfigurationRoot _configurationRoot;
+    private readonly Func<string, string> _getSecret;
 
-    public OnePasswordConfigurationProvider(IConfigurationBuilder builder)
+    public OnePasswordConfigurationProvider(IConfigurationRoot configurationRoot) : this(configurationRoot, ReadSecretFrom1Password) { }
+
+    /// <summary>
+    /// Use this constructor if you want to mock the secret retrieval.
+    /// This is mainly used in testing scenarios.
+    /// The constructor with only IConfigurationBuilder is used in production scenarios
+    /// and automatically gets the secret from 1Password.
+    /// </summary>
+    /// <param name="configurationRoot"></param>
+    /// <param name="getSecret"></param>
+    public OnePasswordConfigurationProvider(IConfigurationRoot configurationRoot, Func<string, string> getSecret)
     {
-        _configurationRoot = builder.Build();
+        _getSecret = getSecret;
+        _configurationRoot = configurationRoot;
     }
 
     /// <inheritdoc />
@@ -32,7 +44,7 @@ public class OnePasswordConfigurationProvider : ConfigurationProvider
     {
         var onePasswordConfiguration = _configurationRoot.AsEnumerable()
             .Where(c => c.Value is not null && c.Value.StartsWith("op://"))
-            .Select(c => (c.Key, Value: GetSecret(c.Value!)))
+            .Select(c => (c.Key, Value: _getSecret(c.Value!)))
             .ToArray();
         // Task.WaitAll(onePasswordConfiguration);
 
@@ -42,7 +54,7 @@ public class OnePasswordConfigurationProvider : ConfigurationProvider
         }
     }
 
-    private static string GetSecret(string key)
+    private static string ReadSecretFrom1Password(string key)
     {
         var read1PasswordKeyInfo = new ProcessStartInfo("op.exe", ["read", key])
         {

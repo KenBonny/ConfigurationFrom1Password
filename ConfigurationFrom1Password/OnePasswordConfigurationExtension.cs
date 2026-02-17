@@ -21,32 +21,16 @@ public class OnePasswodConfigurationSource() : IConfigurationSource
 public class OnePasswordConfigurationProvider : ConfigurationProvider
 {
     private readonly IConfigurationRoot _configurationRoot;
-    private readonly Func<string, string> _getSecret;
 
-    public OnePasswordConfigurationProvider(IConfigurationBuilder configurationRoot) : this(configurationRoot, ReadSecretFrom1Password) { }
-
-    /// <summary>
-    /// Use this constructor if you want to mock the secret retrieval.
-    /// This is mainly used in testing scenarios.
-    /// The constructor with only IConfigurationBuilder is used in production scenarios
-    /// and automatically gets the secret from 1Password.
-    /// </summary>
-    /// <param name="configurationRoot"></param>
-    /// <param name="getSecret"></param>
-    public OnePasswordConfigurationProvider(IConfigurationBuilder configurationRoot, Func<string, string> getSecret)
-    {
-        _getSecret = getSecret;
-        _configurationRoot = configurationRoot.Build();
-    }
+    public OnePasswordConfigurationProvider(IConfigurationBuilder builder) => _configurationRoot = builder.Build();
 
     /// <inheritdoc />
     public override void Load()
     {
         var onePasswordConfiguration = _configurationRoot.AsEnumerable()
             .Where(c => c.Value is not null && c.Value.StartsWith("op://"))
-            .Select(c => (c.Key, Value: _getSecret(c.Value!).TrimEnd(Environment.NewLine.ToCharArray())))
+            .Select(c => (c.Key, Value: ReadSecretFrom1Password(c.Value!).TrimEnd(Environment.NewLine.ToCharArray())))
             .ToArray();
-        // Task.WaitAll(onePasswordConfiguration);
 
         foreach (var task in onePasswordConfiguration)
         {

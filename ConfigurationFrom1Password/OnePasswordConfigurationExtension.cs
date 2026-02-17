@@ -27,14 +27,21 @@ public class OnePasswordConfigurationProvider : ConfigurationProvider
     /// <inheritdoc />
     public override void Load()
     {
+        Func<KeyValuePair<string, string?>, bool> is1PasswordValue = c => c.Value is not null && c.Value.StartsWith("op://");
+        var lineEnding = Environment.NewLine.ToCharArray();
+        var secrets = _configurationRoot.AsEnumerable()
+            .Where(is1PasswordValue)
+            .Select(c => c.Value!)
+            .Distinct()
+            .ToDictionary(key => key, key => ReadSecretFrom1Password(key).TrimEnd(lineEnding));
+        
         var onePasswordConfiguration = _configurationRoot.AsEnumerable()
-            .Where(c => c.Value is not null && c.Value.StartsWith("op://"))
-            .Select(c => (c.Key, Value: ReadSecretFrom1Password(c.Value!).TrimEnd(Environment.NewLine.ToCharArray())))
-            .ToArray();
-
-        foreach (var task in onePasswordConfiguration)
+            .Where(is1PasswordValue)
+            .Select(c => (c.Key, Value: secrets[c.Value!]));
+        
+        foreach (var config in onePasswordConfiguration)
         {
-            Data[task.Key] = task.Value;
+            Data[config.Key] = config.Value;
         }
     }
 

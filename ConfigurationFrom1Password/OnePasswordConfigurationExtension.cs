@@ -44,7 +44,7 @@ public class OnePasswordConfigurationProvider : ConfigurationProvider
     {
         var onePasswordConfiguration = _configurationRoot.AsEnumerable()
             .Where(c => c.Value is not null && c.Value.StartsWith("op://"))
-            .Select(c => (c.Key, Value: _getSecret(c.Value!)))
+            .Select(c => (c.Key, Value: _getSecret(c.Value!).TrimEnd(Environment.NewLine.ToCharArray())))
             .ToArray();
         // Task.WaitAll(onePasswordConfiguration);
 

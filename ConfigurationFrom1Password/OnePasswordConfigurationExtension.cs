@@ -12,7 +12,7 @@ public static class OnePasswordConfigurationExtension
     }
 }
 
-public class OnePasswodConfigurationSource() : IConfigurationSource
+public class OnePasswodConfigurationSource : IConfigurationSource
 {
     /// <inheritdoc />
     public IConfigurationProvider Build(IConfigurationBuilder builder) => new OnePasswordConfigurationProvider(builder);

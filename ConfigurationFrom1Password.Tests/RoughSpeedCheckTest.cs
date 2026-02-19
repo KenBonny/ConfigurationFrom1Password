@@ -6,6 +6,7 @@ namespace ConfigurationFrom1Password.Tests;
 public class RoughSpeedCheckTest
 {
     [Test]
+    [Explicit]
     public Task LoadFrom1Password()
     {
         var builder = Host.CreateApplicationBuilder();

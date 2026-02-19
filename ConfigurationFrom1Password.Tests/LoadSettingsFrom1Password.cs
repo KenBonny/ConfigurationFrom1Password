@@ -6,6 +6,7 @@ namespace ConfigurationFrom1Password.Tests;
 
 record ComplexObject(string Name, int Value, Uri Url, string[] Tags);
 
+[Explicit]
 public class LoadSettingsFrom1Password
 {
     private static HostApplicationBuilder _builder;

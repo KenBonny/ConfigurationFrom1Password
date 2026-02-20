@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace ConfigurationFrom1Password.Tests;
@@ -43,4 +42,8 @@ public class LoadSettingsFrom1Password
         await Assert.That(fromConfig.Tags).IsEquivalentTo(expected.Tags);
         await Assert.That(fromConfig).IsEquivalentTo(expected);
     }
+
+    [Test]
+    public async Task CheckOtpIsLoaded() =>
+        await Assert.That(_builder.Configuration.GetValue<int>("OneTimePassword")).IsBetween(0, 999999);
 }

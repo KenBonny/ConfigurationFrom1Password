@@ -6,8 +6,10 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Configuration
     .AddInMemoryCollection([new("InMemorySensitiveData", "op://Private/1Password Config Extension Test/password")])
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .Replace1PasswordSecrets();
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+if (builder.Environment.IsDevelopment())
+    builder.Configuration.Replace1PasswordSecrets();
 
 var complexObject = builder.Configuration.GetSection("ComplexObject").Get<ComplexObject>();
 Console.WriteLine("InMemory Sensitive Data: " + builder.Configuration["InMemorySensitiveData"]);

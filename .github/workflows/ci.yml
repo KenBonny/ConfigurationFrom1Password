@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -28,10 +30,28 @@ jobs:
       - name: Set version
         id: version
         run: |
-          ASSEMBLY_VERSION=$(grep -oP '(?<=<AssemblyVersion>)[^<]+' ConfigurationFrom1Password/ConfigurationFrom1Password.csproj)
+          CSPROJ="ConfigurationFrom1Password/ConfigurationFrom1Password.csproj"
+          ASSEMBLY_VERSION=$(grep -oP '(?<=<AssemblyVersion>)[^<]+' "$CSPROJ")
           MAJOR=$(echo "$ASSEMBLY_VERSION" | cut -d. -f1)
           MINOR=$(echo "$ASSEMBLY_VERSION" | cut -d. -f2)
-          echo "VERSION=$MAJOR.$MINOR.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+          # Walk commits (newest→oldest) that touched the csproj and find the oldest
+          # one that still carries the current MAJOR.MINOR. The commit just before that
+          # is where MAJOR or MINOR was bumped, so we reset the patch counter from there.
+          VERSION_RESET_COMMIT=""
+          while IFS= read -r COMMIT; do
+            FILE_VERSION=$(git show "$COMMIT:$CSPROJ" 2>/dev/null | grep -oP '(?<=<AssemblyVersion>)[^<]+' || echo "0.0.0")
+            FILE_MAJOR=$(echo "$FILE_VERSION" | cut -d. -f1)
+            FILE_MINOR=$(echo "$FILE_VERSION" | cut -d. -f2)
+            if [ "$FILE_MAJOR" = "$MAJOR" ] && [ "$FILE_MINOR" = "$MINOR" ]; then
+              VERSION_RESET_COMMIT="$COMMIT"
+            else
+              break
+            fi
+          done < <(git log --format="%H" -- "$CSPROJ")
+
+          PATCH=$(git rev-list --count "${VERSION_RESET_COMMIT}..HEAD")
+          echo "VERSION=$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
 
       - name: Pack
         run: dotnet pack ConfigurationFrom1Password/ConfigurationFrom1Password.csproj --no-build --configuration Release --output ./nupkgs /p:Version=${{ steps.version.outputs.VERSION }}

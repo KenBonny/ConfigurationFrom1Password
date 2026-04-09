@@ -27,7 +27,11 @@ jobs:
 
       - name: Set version
         id: version
-        run: echo "VERSION=$(date +'%Y').${{ github.run_number }}" >> $GITHUB_OUTPUT
+        run: |
+          ASSEMBLY_VERSION=$(grep -oP '(?<=<AssemblyVersion>)[^<]+' ConfigurationFrom1Password/ConfigurationFrom1Password.csproj)
+          MAJOR=$(echo "$ASSEMBLY_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$ASSEMBLY_VERSION" | cut -d. -f2)
+          echo "VERSION=$MAJOR.$MINOR.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       - name: Pack
         run: dotnet pack ConfigurationFrom1Password/ConfigurationFrom1Password.csproj --no-build --configuration Release --output ./nupkgs /p:Version=${{ steps.version.outputs.VERSION }}

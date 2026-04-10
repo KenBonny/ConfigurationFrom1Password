@@ -6,7 +6,7 @@ namespace ConfigurationFrom1Password;
 public static class OnePasswordConfigurationExtension
 {
     /// <summary>
-    /// Replaces all 1Password secrets in the configuration with the actual values.
+    /// Update all 1Password secrets in the configuration with the actual values.
     /// </summary>
     /// <param name="builder">The configuration builder to extend with 1Password secret replacement</param>
     /// <returns>The configuration builder with 1Password secrets replaced</returns>

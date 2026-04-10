@@ -5,6 +5,7 @@ namespace ConfigurationFrom1Password;
 
 public static class OnePasswordConfigurationExtension
 {
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IConfigurationBuilder Replace1PasswordSecrets(this IConfigurationBuilder builder)
     {
         builder.Add(new OnePasswodConfigurationSource());

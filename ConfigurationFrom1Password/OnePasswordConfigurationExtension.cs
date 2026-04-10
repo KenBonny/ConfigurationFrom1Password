@@ -3,6 +3,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace ConfigurationFrom1Password;
 
+/// <summary>
+/// Extension methods for replacing 1Password secrets in configuration.
+/// </summary>
 public static class OnePasswordConfigurationExtension
 {
     /// <summary>

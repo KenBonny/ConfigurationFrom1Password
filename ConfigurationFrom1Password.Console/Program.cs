@@ -11,7 +11,8 @@ builder.Configuration
 if (builder.Environment.IsDevelopment())
     builder.Configuration.Replace1PasswordSecrets();
 
-var complexObject = builder.Configuration.GetSection("ComplexObject").Get<ComplexObject>();
+var complexObject = builder.Configuration.GetSection("ComplexObject").Get<ComplexObject>() ??
+    throw new InvalidOperationException("ComplexObject configuration section not found");
 Console.WriteLine("InMemory Sensitive Data: " + builder.Configuration["InMemorySensitiveData"]);
 Console.WriteLine("Sensitive Data: " + builder.Configuration["SensitiveData"]);
 Console.WriteLine("External Service: " + builder.Configuration["ExternalService"]);

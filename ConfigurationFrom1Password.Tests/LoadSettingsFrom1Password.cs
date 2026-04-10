@@ -8,7 +8,7 @@ record ComplexObject(string Name, int Value, Uri Url, string[] Tags);
 [Explicit]
 public class LoadSettingsFrom1Password
 {
-    private static HostApplicationBuilder _builder;
+    private static HostApplicationBuilder _builder = null!;
 
     [Before(Class)]
     public static async Task ClassSetup(ClassHookContext context, CancellationToken cancellationToken)
@@ -36,8 +36,9 @@ public class LoadSettingsFrom1Password
             1,
             new Uri(TestData.Url),
             [TestData.Url, "Item 2"]);
-        
-        var fromConfig = _builder.Configuration.GetSection("ComplexObject").Get<ComplexObject>();
+
+        var fromConfig = _builder.Configuration.GetSection("ComplexObject").Get<ComplexObject>() ??
+            throw new InvalidOperationException("ComplexObject configuration section not found");
         await Assert.That(fromConfig).IsEqualTo(expected).IgnoringType<string[]>();
         await Assert.That(fromConfig.Tags).IsEquivalentTo(expected.Tags);
         await Assert.That(fromConfig).IsEquivalentTo(expected);

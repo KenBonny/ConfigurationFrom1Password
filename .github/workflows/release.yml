@@ -6,7 +6,11 @@ on:
       - master
     paths:
       - 'ConfigurationFrom1Password/**'
-
+      
+permissions:
+  id-token: write
+  contents: read
+  
 jobs:
   build:
     name: Build
@@ -31,6 +35,12 @@ jobs:
 
       - name: Pack
         run: dotnet pack ConfigurationFrom1Password/ConfigurationFrom1Password.csproj --no-build --configuration Release --output ./nupkgs
+        
+      - name: NuGet login (OIDC → temp API key)
+          uses: NuGet/login@v1
+          id: login
+          with:
+            user: ${{ secrets.NUGET_USER }}
 
       - name: Push to NuGet
-        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

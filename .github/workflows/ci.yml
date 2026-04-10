@@ -27,34 +27,8 @@ jobs:
       - name: Build
         run: dotnet build ConfigurationFrom1Password.sln --no-restore --configuration Release
 
-      - name: Set version
-        id: version
-        run: |
-          CSPROJ="ConfigurationFrom1Password/ConfigurationFrom1Password.csproj"
-          ASSEMBLY_VERSION=$(grep -oP '(?<=<AssemblyVersion>)[^<]+' "$CSPROJ")
-          MAJOR=$(echo "$ASSEMBLY_VERSION" | cut -d. -f1)
-          MINOR=$(echo "$ASSEMBLY_VERSION" | cut -d. -f2)
-
-          # Walk commits (newest→oldest) that touched the csproj and find the oldest
-          # one that still carries the current MAJOR.MINOR. The commit just before that
-          # is where MAJOR or MINOR was bumped, so we reset the patch counter from there.
-          VERSION_RESET_COMMIT=""
-          while IFS= read -r COMMIT; do
-            FILE_VERSION=$(git show "$COMMIT:$CSPROJ" 2>/dev/null | grep -oP '(?<=<AssemblyVersion>)[^<]+' || echo "0.0.0")
-            FILE_MAJOR=$(echo "$FILE_VERSION" | cut -d. -f1)
-            FILE_MINOR=$(echo "$FILE_VERSION" | cut -d. -f2)
-            if [ "$FILE_MAJOR" = "$MAJOR" ] && [ "$FILE_MINOR" = "$MINOR" ]; then
-              VERSION_RESET_COMMIT="$COMMIT"
-            else
-              break
-            fi
-          done < <(git log --format="%H" -- "$CSPROJ")
-
-          PATCH=$(git rev-list --count "${VERSION_RESET_COMMIT}..HEAD")
-          echo "VERSION=$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
-
       - name: Pack
-        run: dotnet pack ConfigurationFrom1Password/ConfigurationFrom1Password.csproj --no-build --configuration Release --output ./nupkgs /p:Version=${{ steps.version.outputs.VERSION }}
+        run: dotnet pack ConfigurationFrom1Password/ConfigurationFrom1Password.csproj --no-build --configuration Release --output ./nupkgs
 
       - name: Push to NuGet
         run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
